@@ -1,0 +1,5 @@
+###### Requirements with Version Specifiers ######
+opencv-contrib-python>=4.5.1
+###### Requirements without Version Specifiers ######
+opencv-python
+numpy
