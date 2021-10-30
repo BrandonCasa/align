@@ -14,7 +14,8 @@ histogram = cv2.calcHist([img],[0],None,[256],[0,256])
 axs[0,2].plot(histogram,color = 'r')
 
 peak = x[np.where(y == y.max())]
-print("PeakRange: " + str(peak) + " ± 30")
+print("Min: " + str(peak) + " - 22")
+print("Max: 255")
 min = floor(peak)-22
 max = 255
 mask = cv2.inRange(img, (min, 0, 0), (max, 255,255))
