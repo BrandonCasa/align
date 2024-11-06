@@ -9,8 +9,8 @@ parser.add_argument('--input2', help='Path to input image 2.', default='./images
 parser.add_argument('--homography', help='Path to the homography matrix.', default='./images/H1to3p.xml')
 args = parser.parse_args()
 
-img1 = cv.imread(args.input1, cv.IMREAD_GRAYSCALE)
-img2 = cv.imread(args.input2, cv.IMREAD_GRAYSCALE)
+img1 = cv.imread(args.input1, cv.IMREAD_COLOR)
+img2 = cv.imread(args.input2, cv.IMREAD_COLOR)
 
 if img1 is None or img2 is None:
     print('Could not open or find the images!')
@@ -33,7 +33,7 @@ search_params = dict(checks = 50)
 flann = cv.FlannBasedMatcher(index_params, search_params)
 
 matches = flann.knnMatch(descriptors_1,descriptors_2,k=2)
-nn_match_ratio = 0.90  # Nearest neighbor matching ratio
+nn_match_ratio = 0.9  # Nearest neighbor matching ratio
 # store all the good matches as per Lowe's ratio test.
 good = []
 for m,n in matches:
@@ -50,7 +50,7 @@ homography, mask = cv.findHomography(src_pts, dst_pts, cv.RANSAC, 100.0)
 
 detector = cv.ORB_create(10000)
 # descriptor = cv.ORB_create()
-descriptor = cv.xfeatures2d.BEBLID_create(0.75)
+descriptor = cv.xfeatures2d.BEBLID_create(0.5)
 kpts1 = detector.detect(img1, None)
 kpts2 = detector.detect(img2, None)
 kpts1, desc1 = descriptor.compute(img1, kpts1)
@@ -93,3 +93,11 @@ print('# Keypoints 2:                        \t', len(kpts2))
 print('# Matches:                            \t', len(matched1))
 print('# Inliers:                            \t', len(inliers1))
 print('# Inliers Ratio:                      \t', inlier_ratio)
+
+height, width, channel = img1.shape
+src_pts = np.float32([ inliers1[m.queryIdx].pt for m in good_matches ]).reshape(-1,1,2)
+dst_pts = np.float32([ inliers2[m.trainIdx].pt for m in good_matches ]).reshape(-1,1,2)
+homography, mask = cv.findHomography(src_pts, dst_pts, cv.RANSAC, 100.0)
+img2_warped = cv.warpPerspective(img1, homography, (width, height))
+
+cv.imwrite("./images/img1_warped.png", img2_warped)
